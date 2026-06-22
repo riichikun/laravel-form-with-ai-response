@@ -1,0 +1,192 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Форма обратной связи разработчика",
+        "description": "API позволяет отправлять сообщение через форму обратной связи и получать ИИ-генерированный ответ на электронную почту, указанную в форме.",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/contact": {
+            "post": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "Отправка формы обратной связи",
+                "operationId": "7e210138f8ff9f1e360007c58e55e717",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "phone",
+                                    "email",
+                                    "comment"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "description": "Имя отправителя",
+                                        "type": "string",
+                                        "example": "Иван Иванов",
+                                        "maxLength": 255
+                                    },
+                                    "phone": {
+                                        "description": "Контактный телефон",
+                                        "type": "string",
+                                        "example": "+7 (999) 123-45-67",
+                                        "maxLength": 50
+                                    },
+                                    "email": {
+                                        "description": "Email",
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "ivan@example.com",
+                                        "maxLength": 255
+                                    },
+                                    "comment": {
+                                        "description": "Текст обращения",
+                                        "type": "string",
+                                        "example": "Хочу обсудить сотрудничество.",
+                                        "maxLength": 5000,
+                                        "minLength": 5
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Форма была успешно отправлена"
+                    },
+                    "422": {
+                        "description": "Ошибка валидации"
+                    },
+                    "500": {
+                        "description": "Ошибка сервера"
+                    }
+                }
+            }
+        },
+        "/api/health": {
+            "get": {
+                "tags": [
+                    "system"
+                ],
+                "summary": "Проверка работоспособности приложения (Health Check)",
+                "description": "Возвращает текущий статус системы, время сервера, версию PHP и текущее окружение.",
+                "operationId": "9b09e89d95cbd4cd0db9600a14f9495e",
+                "responses": {
+                    "200": {
+                        "description": "Система работает нормально",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "status",
+                                        "timestamp",
+                                        "php_version",
+                                        "environment"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "UP"
+                                        },
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2026-06-19T09:15:00+00:00"
+                                        },
+                                        "php_version": {
+                                            "type": "string",
+                                            "example": "8.2.12"
+                                        },
+                                        "environment": {
+                                            "type": "string",
+                                            "example": "production"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка сервера"
+                    }
+                }
+            }
+        },
+        "/api/metrics": {
+            "get": {
+                "tags": [
+                    "system"
+                ],
+                "summary": "Получение статистики обращений",
+                "description": "Возвращает агрегированные метрики из файла статистики, включая общее количество запросов и разбивку по категориям AI-анализа.",
+                "operationId": "07f77987ccfde18b963f6fa61f65a81e",
+                "responses": {
+                    "200": {
+                        "description": "Статистика успешно получена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "total_requests",
+                                        "by_category"
+                                    ],
+                                    "properties": {
+                                        "total_requests": {
+                                            "description": "Общее количество обработанных форм",
+                                            "type": "integer",
+                                            "example": 42
+                                        },
+                                        "by_category": {
+                                            "description": "Разбивка метрик по категориям (например, тональность текста от AI)",
+                                            "properties": {
+                                                "positive": {
+                                                    "type": "integer",
+                                                    "example": 25
+                                                },
+                                                "neutral": {
+                                                    "type": "integer",
+                                                    "example": 12
+                                                },
+                                                "negative": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "unknown": {
+                                                    "type": "integer",
+                                                    "example": 0
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка сервера"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "user",
+            "description": "user"
+        },
+        {
+            "name": "system",
+            "description": "system"
+        }
+    ]
+}

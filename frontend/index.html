@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Форма для обратной связи</title>
+    <!-- Tailwind CSS через CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
+
+    <main class="flex-grow max-w-6xl w-full mx-auto px-10 py-20">
+        
+        <div id="contact" class="bg-white p-8 rounded-2xl shadow-xl border border-slate-100 relative">
+            <h3 class="text-2xl font-bold text-slate-900 mb-6">Форма обратной связи</h3>
+            
+            <!-- Информационные плашки (Успех / Ошибка) -->
+            <div id="alertBox" class="hidden mb-6 p-4 rounded-xl text-sm font-medium"></div>
+
+            <form id="contactForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Ваше имя</label>
+                    <input type="text" id="name" required minlength="2"
+                        class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-hidden focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" 
+                        placeholder="Иван Иванов">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Телефон</label>
+                        <input type="tel" id="phone" required
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-hidden focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" 
+                            placeholder="+7 (999) 000-00-00">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Email</label>
+                        <input type="email" id="email" required
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-hidden focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition" 
+                            placeholder="ivan@example.com">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Комментарий</label>
+                    <textarea id="comment" required minlength="5" rows="4"
+                        class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-hidden focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition resize-none" 
+                        placeholder="Опишите ваш вопрос или предложение..."></textarea>
+                </div>
+
+                <button type="submit" id="submitBtn"
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg shadow-indigo-100 flex justify-center items-center cursor-pointer">
+                    <span id="btnText">Отправить сообщение</span>
+                    <!-- Спиннер загрузки -->
+                    <svg id="btnSpinner" class="hidden animate-spin ml-3 h-5 w-5 text-white" xmlns="http://w3.org" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <!-- Футер -->
+    <footer class="bg-slate-900 text-slate-400 text-sm py-6 border-t border-slate-800">
+        <div class="max-w-6xl mx-auto px-4 flex space-x-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex gap-4">
+                <a id="healthLink" href="/api/health" target="_blank" class="hover:text-white transition">Health Check API</a>
+                <a id="metricsLink" href="/api/metrics" target="_blank" class="hover:text-white transition">Metrics API</a>
+            </div>
+            <div>
+                <a id="apiLink" href="/api/documentation" target="_blank" class="hover:text-white transition">API Documentation</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Скрипт отправки данных -->
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8081'; 
+
+        const form = document.getElementById('contactForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const btnSpinner = document.getElementById('btnSpinner');
+        const alertBox = document.getElementById('alertBox');
+
+
+        document.getElementById('healthLink').href = `${API_BASE_URL}/api/health`;
+        document.getElementById('metricsLink').href = `${API_BASE_URL}/api/metrics`;
+        document.getElementById('apiLink').href = `${API_BASE_URL}/api/documentation`;
+
+
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Включаем состояние загрузки
+            setLoading(true);
+            hideAlert();
+
+            // Собираем данные
+            const payload = {
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                comment: document.getElementById('comment').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/contact`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showAlert('success', result.message || 'Спасибо! Ваше обращение успешно отправлено.');
+                    form.reset();
+                } else if (response.status === 422) {
+                    // Ошибки валидации Laravel
+                    let errorMsg = 'Ошибка валидации:<br>';
+                    if (result.errors) {
+                        Object.values(result.errors).forEach(errArray => {
+                            errArray.forEach(msg => errorMsg += `• ${msg}<br>`);
+                        });
+                    }
+                    showAlert('error', errorMsg);
+                } else if (response.status === 429) {
+                    // Ошибка Rate Limiting (Throttle)
+                    showAlert('error', 'Слишком много запросов! Пожалуйста, подождите минуту перед следующей отправкой.');
+                } else {
+                    showAlert('error', result.message || 'Произошла непредвиденная ошибка на сервере.');
+                }
+
+            } catch (error) {
+                console.error('Ошибка Fetch:', error);
+                showAlert('error', 'Не удалось связаться с сервером. Проверьте подключение или настройки CORS.');
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                btnText.textContent = 'Отправка...';
+                btnSpinner.classList.remove('hidden');
+            } else {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                btnText.textContent = 'Отправить сообщение';
+                btnSpinner.classList.add('hidden');
+            }
+        }
+        
+        function showAlert(type, message) {
+            alertBox.classList.remove('hidden', 'bg-emerald-50', 'text-emerald-800', 'border', 'border-emerald-200', 'bg-rose-50', 'text-rose-800', 'border-rose-200');
+            if (type === 'success') {
+                alertBox.classList.add('bg-emerald-50', 'text-emerald-800', 'border', 'border-emerald-200');
+            } else {
+                alertBox.classList.add('bg-rose-50', 'text-rose-800', 'border', 'border-rose-200');
+            }
+            alertBox.innerHTML = message;
+        }
+        
+        function hideAlert()
+        {
+            alertBox.classList.add('hidden');
+        
+        }
+    </script>
