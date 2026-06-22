@@ -24,7 +24,9 @@
 
 **Важно!** При возникновении проблем с правами доступа нужно убедиться, что у пользователя, от лица которого запускается docker, есть доступ к директории ./src/storage
 
-`sudo chmod -R 775 src/storage`
+`find src/storage -type d -exec chmod 755 {} +`
+
+`find src/storage -type f -exec chmod 644 {} +`
 
 Автоматические тесты можно запустить с помощью команды:
 `docker compose exec app php artisan test --group=Feature`
